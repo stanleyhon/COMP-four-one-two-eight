@@ -6,84 +6,102 @@
 
 using namespace std;
 
-int caseNum = 1;
-
-vector< int > * al;
-map< int, int > * waysTo;
-set< int > * seen;
-void isTree (void) {
-    if (seen->size() == 0) {
-        cout << "Case " << caseNum << "is a tree.\n";
-        caseNum++;
-        return;
-    }
-    bool isTree = true;
-    // verify waysTo is all 1 except 1
-    bool rootSeen = false;
-    int rootId = -1;
-    // Check that everything only has been linked TO once, except root.
-    for (map< int, int >::iterator it = waysTo->begin(); it != waysTo->end(); ++it) {
-        if (it->second != 1 && rootSeen == false) {
-            rootSeen = true;
-            rootId = it->first;
-        } else if (it->second != 1 && rootSeen == true) {
-            cout << "Case " << caseNum << "is not a tree.\n";
-            caseNum++;
-            return;
-        }
-    }
-
-    // Now start from AL and do a traversal, we should pass everything we've seen only once.
-    queue< int > q;
-    set< int > traverseSeen;
-    q.push (rootId);
-    while (q.empty() == false) {
-        int current = q.front();
-        if (traverseSeen.count(current) == 0) {
-            traverseSeen.insert(rootId);
-        } else {
-            cout << "Case " << caseNum << "is not a tree.\n";
-            caseNum++;
-            return;
-        }
-        q.pop();
-
-        for (vector< int >::iterator it = al[current].begin(); it != al[current].end(); ++it) {
-            q.push (*it);
-        }
-    }
-
-    // Now check our traverseSeen is the same as global seen
-    if (traverseSeen != (*seen)) {
-        cout << "Case " << caseNum << "is not a tree.\n";
-    } else {
-        cout << "Case " << caseNum << "is a tree.\n";
-    }
-    caseNum++;
-    return;
-
-}
+int testCase = 1;
 
 int main (void) {
-    seen = new set< int >();
-    al = new vector< int >[1000]();
-    waysTo = new map< int, int >();
     int from, to;
-    while (cin >> from >> to && from != -1 && to != -1) {
+
+    set< int > knownNodes; // all known nodes
+    set< int > waysTo; // the ones that have things pointing at it
+    map< int, vector< int > > graph; // adjacency list, of a node and it's children.
+    while (cin >> from >> to) {
         if (from == 0 && to == 0) {
-            // is it a tree?
-            isTree ();
+            if (knownNodes.size() == 0) {
+                cout << "Case " << testCase << " is a tree.\n";
+                testCase++;
+                continue;
+            }
+            bool isTree = true;
+            // look through knownNodes, there will be one where there are no waysTo
+            int rootId = -1;
+            for (set< int >::iterator it = knownNodes.begin(); it != knownNodes.end(); ++it) {
+                cout << "Checking for ways to " << *it << "\n";
+                if (waysTo.count(*it) == 0 && rootId == -1) {
+                    cout << "No ways to " << *it << "\n";
+                    rootId = *it;
+                } else if (waysTo.count(*it) == 0 && rootId != -1) {
+                    cout << " No ways to " << *it << " but already found a root. failing.\n";
+                    cout << "Case " << testCase << " is not a tree.\n";
+                    isTree = false;
+                    break;
+                }
+            }
 
-            al = new vector< int >[1000]();
-            waysTo = new map< int, int >();
-            seen = new set< int >();
+            if (isTree == true) {
+                cout << "Root is " << rootId << "\n";
+                if (rootId == -1) {
+                    cout << "Case " << testCase << " is not a tree.\n";
+                    isTree = false;
+                } else {
+                    // do a BFS from root, make sure we see all known nodes only once each
+                    set< int > bfsNodes;
+                    queue< int > q;
+                    q.push (rootId);
+                    while (q.empty() == false) {
+                        int current = q.front();
+                        q.pop();
+                        if (bfsNodes.count(current) != 0) {
+                            // wtf we've seen this before
+                            cout << "Case " << testCase << " is not a tree.\n";
+                            isTree = false;
+                            break;
+                        } else {
+                            bfsNodes.insert(current);
+                        }
+
+                        // now push on children
+                        for (vector< int >::iterator it = graph[current].begin(); it != graph[current].end(); ++it) {
+                            q.push (*it);
+                        }
+                    }
+
+                    if (isTree == true) { // then check bfsNodes against knownNodes, they should match exactly
+                        for (set< int >::iterator it = knownNodes.begin(); it != knownNodes.end(); ++it) {
+                            if (bfsNodes.count (*it) != 1) {
+                                cout << "Case " << testCase << " is not a tree.\n";
+                                isTree = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (isTree == true) {
+                        cout << "Case " << testCase << " is a tree.\n";
+                    }
+                }
+            }
+            // zero all the datastrcutures
+            knownNodes.clear(); // all known nodes
+            waysTo.clear(); // the ones that have things pointing at it
+            graph.clear(); // adjacency list, of a node and it's children.
+
+//            cout << "finishing testcase " << testCase << "\n";
+            testCase++;
+        } else if (from == -1 && to == -1) {
+//            cout << "We're done\n";
         } else {
-            seen->insert(from);
-            seen->insert(to);
-            al[from].push_back(to);
-            (*waysTo)[to]++;
+            cout << "From " << from << " to " << to << "\n";
+            knownNodes.insert(from);
+            knownNodes.insert(to);
+            waysTo.insert(to);
+            if (graph.count(from) == 0) {
+                vector< int > v;
+                v.push_back (to);
+                graph[from] = v;
+            } else {
+                graph[from].push_back(to);
+            }
         }
-
     }
     return 0;
 }
