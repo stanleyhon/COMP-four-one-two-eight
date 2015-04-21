@@ -3,6 +3,8 @@
 #include <vector>
 #include <set>
 #include <queue>
+#include <cassert>
+
 
 using namespace std;
 
@@ -25,12 +27,18 @@ int main (void) {
             // look through knownNodes, there will be one where there are no waysTo
             int rootId = -1;
             for (set< int >::iterator it = knownNodes.begin(); it != knownNodes.end(); ++it) {
+#ifdef DEBUG
                 cout << "Checking for ways to " << *it << "\n";
+#endif
                 if (waysTo.count(*it) == 0 && rootId == -1) {
+#ifdef DEBUG
                     cout << "No ways to " << *it << "\n";
+#endif
                     rootId = *it;
                 } else if (waysTo.count(*it) == 0 && rootId != -1) {
+#ifdef DEBUG
                     cout << " No ways to " << *it << " but already found a root. failing.\n";
+#endif
                     cout << "Case " << testCase << " is not a tree.\n";
                     isTree = false;
                     break;
@@ -38,7 +46,9 @@ int main (void) {
             }
 
             if (isTree == true) {
+#ifdef DEBUG
                 cout << "Root is " << rootId << "\n";
+#endif
                 if (rootId == -1) {
                     cout << "Case " << testCase << " is not a tree.\n";
                     isTree = false;
@@ -49,6 +59,9 @@ int main (void) {
                     q.push (rootId);
                     while (q.empty() == false) {
                         int current = q.front();
+#ifdef DEBUG
+                        cout << "BFS visiting " << current << "\n";
+#endif
                         q.pop();
                         if (bfsNodes.count(current) != 0) {
                             // wtf we've seen this before
@@ -82,15 +95,26 @@ int main (void) {
             }
             // zero all the datastrcutures
             knownNodes.clear(); // all known nodes
+            if (knownNodes.size() != 0) {
+                assert(0);
+            }
             waysTo.clear(); // the ones that have things pointing at it
+            if (waysTo.size() != 0) {
+                assert(0);
+            }
             graph.clear(); // adjacency list, of a node and it's children.
+            if (graph.size() != 0) {
+                assert(0);
+            }
 
 //            cout << "finishing testcase " << testCase << "\n";
             testCase++;
         } else if (from == -1 && to == -1) {
 //            cout << "We're done\n";
         } else {
+#ifdef DEBUG
             cout << "From " << from << " to " << to << "\n";
+#endif
             knownNodes.insert(from);
             knownNodes.insert(to);
             waysTo.insert(to);
