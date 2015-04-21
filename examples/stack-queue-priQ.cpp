@@ -30,10 +30,10 @@ int main (void) {
     // priority queue
     priority_queue< int > pq;
     priority_queue< int, vector< int >, mycomparison > pq_cc; // custom comparitor
-    priority_queue< int, vector< int >, greater< int > >; // greater than instead of less than, reverse sorted   
+    priority_queue< int, vector< int >, greater< int > > pq_rev; // greater than instead of less than, reverse sorted   
 
     pq.push (5);
-    pq.front (); // 5;
+    pq.top (); // 5;
     pq.size(); // num elements
     pq.empty();
     pq.pop(); // remove 5
