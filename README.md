@@ -1,2 +1,2 @@
-# COMP-4128
+# COMP-four-one-two-eight
 Programming Challenges
